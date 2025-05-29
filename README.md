@@ -38,9 +38,9 @@ Ready? Continue to the instructions below.
 This lab is running in a new remote container on GitHub Codespaces. This introduces a new way to work on and turn in your code. Here's the process:
 
 1. First, allow Codespaces to build the container. This can take a few minutes.
-2. Create a new Terminal at the bottom (you may need to click the + button). Please ensure you do not create multiple.
-3. The first time you do this, it will take a few minutes to start as it unpacks the OpenROAD sources.
-4. Afterwards, with an open interactive terminal, you can type `make open` to load the lab and open the workspace. You will find the `sta/` and `dbSta/` folders in the sidebar. 
+2. Create a new Terminal at the bottom (you may need to click the + button). Please ensure you do not create multiple. **Do this only after the `Building codespace...` popup disappears.**
+3. The first time you do this, it may take a few minutes to start as it unpacks the OpenROAD sources.
+4. Afterwards, with an open interactive terminal (you'll see the `ece 260c` logo), you can type `make open` to load the lab and open the workspace. You will find the `sta/` and `dbSta/` folders in the sidebar and the `ToySizer.cc`/`ToySizer.hh` files open. You may need to call `make open` twice if they don't appear the first time.
 5. After reading the introduction above, you can complete `ToySizer.cc` (it will be opened for you). Remember to save your work.
 6. When you're ready, try building with `make build`. Here, you can resolve build errors.
 7. When your code builds successfully, you can run `make test`. The test script will give the results of your program alongside some expected value ranges.

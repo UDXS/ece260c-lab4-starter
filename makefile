@@ -12,7 +12,7 @@ open: start
 	@code -a /OpenROAD/src/dbSta
 	@code -a /OpenROAD/src/sta
 	@code /OpenROAD/src/dbSta/include/db_sta/ToySizer.hh
-	@code /OpenROAD/src/dbSta/src/ToySizer.cc b/src/dbSta/src/ToySizer.cc
+	@code /OpenROAD/src/dbSta/src/ToySizer.cc
 
 build:
 	echo "Building..."
