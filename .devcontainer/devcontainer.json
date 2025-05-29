@@ -1,0 +1,17 @@
+{
+  "name": "ECE 260C Lab 4 Container",
+  "image": "ghcr.io/udxs/ece260c-sources:main",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "llvm-vs-code-extensions.vscode-clangd"
+      ],
+      "settings": {
+        "files.autoSave": "off",
+        "files.exclude": {
+          "template.patch": true
+        }
+      }
+    }
+  }
+}
