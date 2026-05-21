@@ -1,9 +1,9 @@
 diff --git a/src/dbSta/include/db_sta/ToySizer.hh b/src/dbSta/include/db_sta/ToySizer.hh
 new file mode 100644
-index 0000000000..7d4dc95272
+index 0000000000..d6880d9ae3
 --- /dev/null
 +++ b/src/dbSta/include/db_sta/ToySizer.hh
-@@ -0,0 +1,63 @@
+@@ -0,0 +1,64 @@
 +// ECE 260C Lab 4
 +// ToySizer - Small-scale ERC-compliance gate resizer
 +// Created by Davit Markarian.
@@ -63,28 +63,29 @@ index 0000000000..7d4dc95272
 +  sta::dbNetwork* db_network_;
 +  utl::Logger* logger_;
 +  sta::LibertyLibrary* default_library;
-+  sta::Corner* default_corner;
++  // A Scene is a corner + mode
++  sta::Scene* default_scene;
 +};
 +
 +}  // namespace sta
 diff --git a/src/dbSta/src/CMakeLists.txt b/src/dbSta/src/CMakeLists.txt
-index 633e7f146b..c8f3ba975d 100644
+index 78139870eb..bd80b228fe 100644
 --- a/src/dbSta/src/CMakeLists.txt
 +++ b/src/dbSta/src/CMakeLists.txt
-@@ -9,6 +9,7 @@ add_library(dbSta_lib
-   dbSdcNetwork.cc
+@@ -11,6 +11,7 @@ add_library(dbSta_lib
    dbReadVerilog.cc
    SpefWriter.cc
+   IpChecker.cc
 +  ToySizer.cc
  )
  
  target_include_directories(dbSta_lib
 diff --git a/src/dbSta/src/ToySizer.cc b/src/dbSta/src/ToySizer.cc
 new file mode 100644
-index 0000000000..6d0c9f594d
+index 0000000000..4a8d6adec2
 --- /dev/null
 +++ b/src/dbSta/src/ToySizer.cc
-@@ -0,0 +1,275 @@
+@@ -0,0 +1,270 @@
 +#include "db_sta/ToySizer.hh"
 +
 +#include <cstddef>
@@ -113,9 +114,9 @@ index 0000000000..6d0c9f594d
 +    logger_->error(utl::STA, 6400, "Error: no library loaded");
 +  }
 +
-+  default_corner = corners()->findCorner(0);
-+  if (default_corner == nullptr) {
-+    logger_->error(utl::STA, 6401, "Error: no corners found.");
++  default_scene = scenes()[0];
++  if (default_scene == nullptr) {
++    logger_->error(utl::STA, 6401, "Error: no scene found.");
 +  }
 +
 +  sta_->ensureLinked();
@@ -193,14 +194,10 @@ index 0000000000..6d0c9f594d
 +  // https://en.cppreference.com/w/cpp/utility/optional/
 +
 +  // TODO: Perform the cell replacement, replacing the instance's master with
-+  // the stronger equivalent found above. Key function:
-+  // db_network_->replaceCell(instance, cell)
-+  // https://github.com/The-OpenROAD-Project/OpenSTA/blob/65c2943191b8c59a065fcbb28519917a944eadef/include/sta/Network.hh#L510
-+  // This is equivalent to calling swapMaster in OpenDB.
-+  // Remember that you have to unwrap the std::optional. You may also need to
-+  // convert it to a generic cell by callling db_network_->cell().
++  // the stronger equivalent found above. You need to find an equivalent to OpenDB's swapMaster
++  // in the STA DB. You may also need to convert it to a generic cell by callling db_network_->cell().
++  ...
 +
-+  db_network_->replaceCell(...);
 +  return true;
 +}
 +
@@ -221,14 +218,14 @@ index 0000000000..6d0c9f594d
 +  // Now, we iterate through all pins.
 +  while (iter->hasNext()) {
 +    sta::Pin* pin = iter->next();
-+    // TODO: use db_network_->libertyPort to get the master's pin and its
++    // TODO: find a function to get the master's pin and its
 +    // associated information. This is equivalent to getting the MTerm for an
 +    // ITerm in OpenDB.
 +    sta::LibertyPort* port = ...;
 +
 +    // TODO: use isSignalOutput to see if this is an output port. Otherwise,
-+    // continue to the next pin. If it is, then call
-+    // port->slewLimit(MinMax::max(), limit, exists) Finally, if the slew limit
++    // continue to the next pin. If it is, then find/call a function
++    // to get the max slew limit for the port. If if the slew limit
 +    // exists, then return it. Otherwise, continue the loop.
 +
 +    if(isSignalOutput(...)) {
@@ -236,9 +233,9 @@ index 0000000000..6d0c9f594d
 +    }
 +  }
 +
-+  // Handled for you: if the cell pin has no max slew declared,
++  // If the cell pin has no max slew declared,
 +  // find the library's default. If that doesn't exist, return Infinity.
-+  default_library->defaultMaxSlew(limit, exists);
++  ...
 +  return exists ? limit : INF;
 +}
 +
@@ -255,14 +252,13 @@ index 0000000000..6d0c9f594d
 +    sta::LibertyPort* port = ...;
 +
 +    // TODO: use isSignalOutput to see if this is an output port. Otherwise,
-+    // continue to the next pin. If it is, then call
-+    // port->capacitanceLimit(MinMax::max(), limit, exists) Finally, if the
-+    // capacitance limit exists, then return it. Otherwise, continue the loop.
++    // continue to the next pin. If it is, then find/call the max capacitance limit for the port. 
++    // Finally, if the capacitance limit exists, then return it. Otherwise, continue the loop.
 +  }
 +
-+  // Handled for you: if the cell has no max capacitance declared,
++  // If the cell has no max capacitance declared,
 +  // find the library's default. If that doesn't exist, return Infinity.
-+  default_library->defaultMaxCapacitance(limit, exists);
++  ...
 +  return exists ? limit : INF;
 +}
 +
@@ -281,7 +277,7 @@ index 0000000000..6d0c9f594d
 +      sta_->ensureGraph()->pinVertices(pin, vertex, vertex_bidirect);
 +
 +      // TODO: Check if vertex is a null pointer (nullptr)
-+      // If not, then return its worst-case slew using sta::delayAsFloat(sta_->vertexSlew(... , MinMax::max()));
++      // If not, then return its worst-case slew using sta::delayAsFloat(sta_->slew(vertex, sta::RiseFallBoth::riseFall(), sta::SceneSeq({default_scene}), MinMax::max()));
 +      // If it is a null pointer, then check vertex_bidirect in the same way,
 +      // returning its worst-case slew if it is not a null pointer.
 +      // If they are both null, then allow the loop to continue. 
@@ -308,14 +304,14 @@ index 0000000000..6d0c9f594d
 +    sta::Net* net = db_network_->net(pin);
 +
 +    // TODO: Check that the LibertyPort is not a null pointer and is an output.
-+    // If so, Retrieve its capacitance for the default corner (see ToySizer.hh).
++    // If so, Retrieve its max "connected" capacitance for the default scene (see ToySizer.hh).
 +    // Finally, return the sum of pin and wire capacitances.
 +    // Otherwise, the loop should continue.
 +
 +    if (... && ...) {
 +      float pin_cap, wire_cap;
 +      
-+      // Useful function:  sta_->connectedCap(net, corner, sta::MinMax::max(), pin_cap, wire_cap);
++      ...
 +
 +    }
 +  }
@@ -362,19 +358,19 @@ index 0000000000..6d0c9f594d
 +}
 \ No newline at end of file
 diff --git a/src/dbSta/src/dbSta.i b/src/dbSta/src/dbSta.i
-index 5340200fc1..a17a7a6f91 100644
+index c5e99fd8a3..37cb1d1b92 100644
 --- a/src/dbSta/src/dbSta.i
 +++ b/src/dbSta/src/dbSta.i
-@@ -10,6 +10,7 @@
- #include "ord/OpenRoad.hh"
- #include "sta/Property.hh"
- #include "sta/VerilogWriter.hh"
-+#include "db_sta/ToySizer.hh"
+@@ -7,6 +7,7 @@
  
- namespace ord {
- // Defined in OpenRoad.i
-@@ -213,4 +214,16 @@ replace_hier_module_cmd(odb::dbModInst* mod_inst, odb::dbModule* module)
-   (void) db_network->replaceHierModule(mod_inst, module);
+ #include "odb/db.h"
+ #include "db_sta/dbSta.hh"
++#include "db_sta/ToySizer.hh"
+ #include "db_sta/dbNetwork.hh"
+ #include "db_sta/IpChecker.hh"
+ #include "db_sta/MakeDbSta.hh"
+@@ -228,6 +229,18 @@ void check_axioms_cmd()
+   sta->checkSanity();
  }
  
 +void toy_resize_cmd() {
@@ -389,14 +385,16 @@ index 5340200fc1..a17a7a6f91 100644
 +  return sizer.findUndersizedInstances().size();
 +}
 +
- %} // inline
+ } // namespace sta
+ 
+ bool
 diff --git a/src/dbSta/src/dbSta.tcl b/src/dbSta/src/dbSta.tcl
-index 38e7aa8e17..d2e6b7fc02 100644
+index 37fc2f9c5f..ad100d884e 100644
 --- a/src/dbSta/src/dbSta.tcl
 +++ b/src/dbSta/src/dbSta.tcl
-@@ -140,5 +140,19 @@ proc get_hier_module { arg } {
+@@ -184,5 +184,19 @@ proc check_ip { args } {
+   return [sta::check_ip_cmd $master_name $check_all $max_polygons $verbose]
  }
- interp alias {} get_design {} get_hier_module
  
 +define_cmd_args "toy_resize" {}
 +

@@ -18,5 +18,10 @@
                 "rashwell.tcl"
             ]
         }
+    },
+    "hostRequirements": {
+    "cpus": 8,
+    "memory": "24gb",
+    "storage": "24gb"
     }
 }

@@ -1,39 +1,44 @@
-/OpenROAD/.e260clab4.installed:
+start: OpenROAD/.e260clab4.installed
+
+OpenROAD/README.md:
+	@git clone https://github.com/The-OpenROAD-Project/OpenROAD.git
+	
+
+OpenROAD/.e260clab4.installed: OpenROAD/README.md
 	@cp -f template.patch /temp.patch
-	@cd /OpenROAD && git apply --whitespace=nowarn /temp.patch 
-	@touch /OpenROAD/.e260clab4.installed
+	@cd OpenROAD && git submodule update --init --recursive && git reset --hard --recurse-submodules 52ff2a5ea5814dc671c1cf7c4b950f840b6a4e88
+	@cd OpenROAD && git apply --check --whitespace=nowarn /temp.patch  && git apply --whitespace=nowarn /temp.patch  || echo "Already applied"
+	@cd OpenROAD && ./etc/DependencyInstaller.sh -common && ./etc/Build.sh -cmake='-DLINK_TIME_OPTIMIZATION=OFF' 
+	@touch OpenROAD/.e260clab4.installed
 	@echo "Assignment Started."
 
 .PHONY: open start build test_without_build test
 
-start: /OpenROAD/.e260clab4.installed
 
 open: start
-	@code -a /OpenROAD/src/dbSta
-	@code -a /OpenROAD/src/sta
-	@code /OpenROAD/src/dbSta/include/db_sta/ToySizer.hh
-	@code /OpenROAD/src/dbSta/src/ToySizer.cc
+	@code OpenROAD/src/dbSta/include/db_sta/ToySizer.hh
+	@code OpenROAD/src/dbSta/src/ToySizer.cc
 
 build:
 	echo "Building..."
-	cd /OpenROAD/build && make --no-print-directory -j
+	cd OpenROAD/build && make --no-print-directory -j
 
 test_without_build:
 	@echo "Testing..."
 	@mkdir -p results
 	@rm -f results/*
-	/OpenROAD/build/src/openroad test.tcl
+	@OpenROAD/build/bin/openroad test.tcl
 
 test: build test_without_build
 
 turnin: test
 	@echo "Turning in..."
-	@cd /OpenROAD && git add . 
-	@cd /OpenROAD && git diff --staged > /turnin.patch
+	@cd OpenROAD && git add . 
+	@cd OpenROAD && git diff --staged > /turnin.patch
 	@cp -f /turnin.patch .
 	@git add .
 	@git commit -m "Turn-in"
 	@git push
 
 run: 
-	/OpenROAD/build/src/openroad
+	@OpenROAD/build/bin/openroad
