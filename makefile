@@ -7,8 +7,8 @@ OpenROAD/README.md:
 OpenROAD/.e260clab4.installed: OpenROAD/README.md
 	@cp -f template.patch /temp.patch
 	@cd OpenROAD && git submodule update --init --recursive && git reset --hard --recurse-submodules 52ff2a5ea5814dc671c1cf7c4b950f840b6a4e88
-	@cd OpenROAD && git apply --check --whitespace=nowarn /temp.patch  && git apply --whitespace=nowarn /temp.patch  || echo "Already applied"
 	@cd OpenROAD && ./etc/DependencyInstaller.sh -common && ./etc/Build.sh -cmake='-DLINK_TIME_OPTIMIZATION=OFF' 
+	@cd OpenROAD && git apply --check --whitespace=nowarn /temp.patch  && git apply --whitespace=nowarn /temp.patch  || echo "Already applied"
 	@touch OpenROAD/.e260clab4.installed
 	@echo "Assignment Started."
 
