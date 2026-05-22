@@ -69,7 +69,6 @@ index 0000000000..d6880d9ae3
 +
 +}  // namespace sta
 diff --git a/src/dbSta/src/CMakeLists.txt b/src/dbSta/src/CMakeLists.txt
-index 78139870eb..bd80b228fe 100644
 --- a/src/dbSta/src/CMakeLists.txt
 +++ b/src/dbSta/src/CMakeLists.txt
 @@ -11,6 +11,7 @@ add_library(dbSta_lib
@@ -82,15 +81,13 @@ index 78139870eb..bd80b228fe 100644
  target_include_directories(dbSta_lib
 diff --git a/src/dbSta/src/ToySizer.cc b/src/dbSta/src/ToySizer.cc
 new file mode 100644
-index 0000000000..4a8d6adec2
 --- /dev/null
 +++ b/src/dbSta/src/ToySizer.cc
-@@ -0,0 +1,270 @@
+@@ -0,0 +1,269 @@
 +#include "db_sta/ToySizer.hh"
 +
 +#include <cstddef>
 +
-+#include "sta/Corner.hh"
 +#include "sta/DelayFloat.hh"
 +#include "sta/EquivCells.hh"
 +#include "sta/Graph.hh"
@@ -389,7 +386,6 @@ index c5e99fd8a3..37cb1d1b92 100644
  
  bool
 diff --git a/src/dbSta/src/dbSta.tcl b/src/dbSta/src/dbSta.tcl
-index 37fc2f9c5f..ad100d884e 100644
 --- a/src/dbSta/src/dbSta.tcl
 +++ b/src/dbSta/src/dbSta.tcl
 @@ -184,5 +184,19 @@ proc check_ip { args } {

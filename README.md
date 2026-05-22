@@ -1,6 +1,6 @@
 # ECE 260C Lab 4: Modifying & Extending OpenROAD
 
-This lab will be completed in GitHub Codespaces. You will not need to make any other submissions.
+**This lab will be completed in GitHub Codespaces - Other environments are unsupported.** You will not need to make any other submissions.
 
 **Name:** Your Name Here
 **PID:** Your PID Here
